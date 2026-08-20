@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Camera outline icon -->
+    <path
+        android:fillColor="#2563EB"
+        android:pathData="M34,30h8l3,4h18l3,-4h8c3.3,0 6,2.7 6,6v36c0,3.3 -2.7,6 -6,6H34c-3.3,0 -6,-2.7 -6,-6V36c0,-3.3 2.7,-6 6,-6z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,40c6.6,0 12,5.4 12,12s-5.4,12 -12,12s-12,-5.4 -12,-12s5.4,-12 12,-12m0,-4c-8.8,0 -16,7.2 -16,16s7.2,16 16,16s16,-7.2 16,-16s-7.2,-16 -16,-16z" />
+</vector>

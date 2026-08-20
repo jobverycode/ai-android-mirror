@@ -1,0 +1,121 @@
+<resources>
+    <!-- App & General -->
+    <string name="app_name">AI Mirror</string>
+    <string name="app_description">LAN Real-time Camera Mirroring</string>
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="save">Save</string>
+    <string name="close">Close</string>
+    <string name="ok">OK</string>
+    <string name="retry">Retry</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="version">Version</string>
+    <string name="author">Developer</string>
+
+    <!-- Role Selection -->
+    <string name="role_title">Select Device Role</string>
+    <string name="role_subtitle">Choose how this device will participate in mirroring</string>
+    <string name="role_sender_title">Sender (Camera)</string>
+    <string name="role_sender_desc">Capture video from camera and stream live to receiver device over LAN</string>
+    <string name="role_receiver_title">Receiver (Mirror Screen)</string>
+    <string name="role_receiver_desc">Receive and display the real-time camera stream from another phone</string>
+
+    <!-- Device & Network Discovery -->
+    <string name="my_device">My Device</string>
+    <string name="device_name">Device Name</string>
+    <string name="device_ip">Local IP</string>
+    <string name="wifi_status">Wi-Fi Status</string>
+    <string name="wifi_connected">Connected to Wi-Fi</string>
+    <string name="wifi_disconnected">Not Connected to Wi-Fi</string>
+    <string name="wifi_warning">Please connect both devices to the same Wi-Fi / Local Area Network</string>
+    <string name="discovered_devices">Discovered LAN Devices</string>
+    <string name="searching_devices">Searching for nearby mirror devices…</string>
+    <string name="no_devices_found">No devices found on LAN yet</string>
+    <string name="connect">Connect / Pair</string>
+    <string name="connecting">Connecting…</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="manual_connect">Direct IP Connect</string>
+    <string name="manual_connect_desc">Enter target IP &amp; Port manually</string>
+    <string name="target_ip">Target IP Address</string>
+    <string name="target_port">Target Port</string>
+    <string name="invalid_ip">Invalid IP address</string>
+    <string name="invalid_port">Invalid port number</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">Pairing Request</string>
+    <string name="pair_request_message">%1$s wants to connect to your mirror stream. Accept?</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
+    <string name="pairing_accepted">Pairing accepted</string>
+    <string name="pairing_rejected">Pairing rejected</string>
+
+    <!-- Sender Screen -->
+    <string name="sender_title">Mirror Camera (Sender)</string>
+    <string name="streaming_active">Streaming Live</string>
+    <string name="streaming_idle">Ready / Waiting for Receiver</string>
+    <string name="receivers_count">Connected Receivers: %1$d</string>
+    <string name="camera_switch">Switch Camera</string>
+    <string name="flashlight">Flashlight</string>
+    <string name="flashlight_on">Flashlight On</string>
+    <string name="flashlight_off">Flashlight Off</string>
+    <string name="camera_front">Front Camera</string>
+    <string name="camera_back">Back Camera</string>
+    <string name="stream_resolution">Resolution</string>
+    <string name="stream_fps">Frame Rate</string>
+    <string name="stream_quality">Image Quality</string>
+
+    <!-- Receiver Screen -->
+    <string name="receiver_title">Mirror Display (Receiver)</string>
+    <string name="waiting_stream">Waiting for video stream from sender…</string>
+    <string name="mirror_flip_horizontal">Horizontal Mirror Flip</string>
+    <string name="mirror_flip_on">Mirror Mode (Flipped)</string>
+    <string name="mirror_flip_off">Normal Mode</string>
+    <string name="fullscreen">Fullscreen</string>
+    <string name="take_snapshot">Take Photo</string>
+    <string name="snapshot_saved">Photo saved successfully</string>
+    <string name="snapshot_failed">Failed to save photo</string>
+    <string name="reconnect">Reconnect</string>
+
+    <!-- Stats Overlay -->
+    <string name="stats_overlay">Stats Overlay</string>
+    <string name="stats_fps">FPS: %1$.1f</string>
+    <string name="stats_bitrate">Bitrate: %1$.1f KB/s</string>
+    <string name="stats_latency">Latency: %1$d ms</string>
+    <string name="stats_resolution">Res: %1$dx%2$d</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_general">General</string>
+    <string name="settings_language">Language</string>
+    <string name="language_system">Follow System</string>
+    <string name="language_zh">简体中文 (Simplified Chinese)</string>
+    <string name="language_en">English</string>
+    <string name="settings_video">Video &amp; Stream Quality</string>
+    <string name="resolution_sd">480p (Fastest, Low Bandwidth)</string>
+    <string name="resolution_hd">720p HD (Recommended)</string>
+    <string name="resolution_fhd">1080p Full HD (High Quality)</string>
+    <string name="fps_15">15 FPS</string>
+    <string name="fps_24">24 FPS</string>
+    <string name="fps_30">30 FPS (Smooth)</string>
+    <string name="fps_60">60 FPS (Ultra Smooth)</string>
+    <string name="quality_low">Low Quality (60%)</string>
+    <string name="quality_medium">Medium Quality (80%)</string>
+    <string name="quality_high">High Quality (95%)</string>
+    <string name="settings_network">Network &amp; Pairing</string>
+    <string name="server_port">Stream Server Port</string>
+    <string name="auto_accept_pairing">Auto Accept Pairing Requests</string>
+    <string name="auto_accept_desc">Automatically approve incoming connections from LAN</string>
+    <string name="keep_screen_on">Keep Screen On</string>
+    <string name="keep_screen_on_desc">Prevent screen from sleeping during mirror streaming</string>
+    <string name="about_title">About AI Mirror</string>
+    <string name="about_desc">High performance real-time local network camera mirror application designed for Android devices.</string>
+
+    <!-- Permissions -->
+    <string name="permission_camera_title">Camera Permission Required</string>
+    <string name="permission_camera_desc">AI Mirror needs camera access to capture and transmit video stream in real time.</string>
+    <string name="grant_permission">Grant Permission</string>
+</resources>

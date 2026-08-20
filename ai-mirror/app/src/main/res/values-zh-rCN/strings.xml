@@ -1,0 +1,121 @@
+<resources>
+    <!-- App & General -->
+    <string name="app_name">AI 镜像</string>
+    <string name="app_description">局域网高清实时相机镜像</string>
+    <string name="back">返回</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+    <string name="save">保存</string>
+    <string name="close">关闭</string>
+    <string name="ok">确定</string>
+    <string name="retry">重试</string>
+    <string name="settings">设置</string>
+    <string name="about">关于</string>
+    <string name="version">版本</string>
+    <string name="author">开发者</string>
+
+    <!-- Role Selection -->
+    <string name="role_title">选择设备角色</string>
+    <string name="role_subtitle">选择当前手机在镜像流中担任的角色</string>
+    <string name="role_sender_title">发送端（摄像头）</string>
+    <string name="role_sender_desc">打开摄像头采集画面，并在局域网中实时传输给接收端手机</string>
+    <string name="role_receiver_title">接收端（镜子显示器）</string>
+    <string name="role_receiver_desc">接收并在屏幕上低延迟显示来自另一台手机的实时相机画面</string>
+
+    <!-- Device & Network Discovery -->
+    <string name="my_device">本机信息</string>
+    <string name="device_name">设备名称</string>
+    <string name="device_ip">本机局域网 IP</string>
+    <string name="wifi_status">Wi-Fi 状态</string>
+    <string name="wifi_connected">已连接 Wi-Fi</string>
+    <string name="wifi_disconnected">未连接 Wi-Fi</string>
+    <string name="wifi_warning">请确保两台手机连接在同一个 Wi-Fi 或局域网下</string>
+    <string name="discovered_devices">局域网发现的设备</string>
+    <string name="searching_devices">正在搜索局域网中的镜像设备…</string>
+    <string name="no_devices_found">暂未发现局域网设备，请确保两台设备均已打开 App</string>
+    <string name="connect">连接 / 配对</string>
+    <string name="connecting">连接中…</string>
+    <string name="connected">已连接</string>
+    <string name="disconnected">已断开</string>
+    <string name="disconnect">断开连接</string>
+    <string name="manual_connect">直接输入 IP 连接</string>
+    <string name="manual_connect_desc">手动输入目标设备的 IP 和端口进行直连</string>
+    <string name="target_ip">目标设备 IP 地址</string>
+    <string name="target_port">目标端口</string>
+    <string name="invalid_ip">无效的 IP 地址</string>
+    <string name="invalid_port">无效的端口号</string>
+
+    <!-- Pairing -->
+    <string name="pair_request_title">设备配对请求</string>
+    <string name="pair_request_message">设备「%1$s」请求连接并查看您的相机画面，是否允许？</string>
+    <string name="accept">允许</string>
+    <string name="reject">拒绝</string>
+    <string name="pairing_accepted">已同意配对</string>
+    <string name="pairing_rejected">已拒绝配对</string>
+
+    <!-- Sender Screen -->
+    <string name="sender_title">相机镜像发送端</string>
+    <string name="streaming_active">正在实时推流</string>
+    <string name="streaming_idle">就绪 / 等待接收端接入</string>
+    <string name="receivers_count">已连接接收端：%1$d 台</string>
+    <string name="camera_switch">切换摄像头</string>
+    <string name="flashlight">手电筒</string>
+    <string name="flashlight_on">手电筒开启</string>
+    <string name="flashlight_off">手电筒关闭</string>
+    <string name="camera_front">前置摄像头</string>
+    <string name="camera_back">后置摄像头</string>
+    <string name="stream_resolution">分辨率</string>
+    <string name="stream_fps">目标帧率</string>
+    <string name="stream_quality">画质质量</string>
+
+    <!-- Receiver Screen -->
+    <string name="receiver_title">镜子显示接收端</string>
+    <string name="waiting_stream">正在等待发送端传输视频流…</string>
+    <string name="mirror_flip_horizontal">水平镜像翻转</string>
+    <string name="mirror_flip_on">镜子模式 (已水平镜像)</string>
+    <string name="mirror_flip_off">原画模式 (未镜像)</string>
+    <string name="fullscreen">全屏模式</string>
+    <string name="take_snapshot">拍照截图</string>
+    <string name="snapshot_saved">照片已保存到相册</string>
+    <string name="snapshot_failed">照片保存失败</string>
+    <string name="reconnect">重新连接</string>
+
+    <!-- Stats Overlay -->
+    <string name="stats_overlay">实时性能指标</string>
+    <string name="stats_fps">帧率: %1$.1f FPS</string>
+    <string name="stats_bitrate">码率: %1$.1f KB/s</string>
+    <string name="stats_latency">延迟: %1$d ms</string>
+    <string name="stats_resolution">分辨率: %1$dx%2$d</string>
+
+    <!-- Settings -->
+    <string name="settings_title">设置</string>
+    <string name="settings_general">常规设置</string>
+    <string name="settings_language">语言 (Language)</string>
+    <string name="language_system">跟随系统</string>
+    <string name="language_zh">简体中文</string>
+    <string name="language_en">English</string>
+    <string name="settings_video">视频与传输画质</string>
+    <string name="resolution_sd">480p 标清 (极速低延迟/省流)</string>
+    <string name="resolution_hd">720p 高清 (推荐平衡)</string>
+    <string name="resolution_fhd">1080p 超清 (高画质)</string>
+    <string name="fps_15">15 帧/秒</string>
+    <string name="fps_24">24 帧/秒</string>
+    <string name="fps_30">30 帧/秒 (流畅)</string>
+    <string name="fps_60">60 帧/秒 (极度流畅)</string>
+    <string name="quality_low">较低压缩 (60% 质量)</string>
+    <string name="quality_medium">标准压缩 (80% 质量)</string>
+    <string name="quality_high">高画质压缩 (95% 质量)</string>
+    <string name="settings_network">网络与配对</string>
+    <string name="server_port">推流服务监听端口</string>
+    <string name="auto_accept_pairing">自动允许配对请求</string>
+    <string name="auto_accept_desc">局域网内配对请求将自动同意并开始传输</string>
+    <string name="keep_screen_on">保持屏幕常亮</string>
+    <string name="keep_screen_on_desc">传输或接收过程中避免手机自动锁屏熄灭</string>
+    <string name="about_title">关于 AI 镜像</string>
+    <string name="about_desc">基于 Android CameraX 与低延迟局域网传输架构构建的双机实时镜像软件，支持自动局域网发现与配对。</string>
+
+    <!-- Permissions -->
+    <string name="permission_camera_title">需要相机权限</string>
+    <string name="permission_camera_desc">AI 镜像需要访问摄像头以采集画面并通过局域网传输。</string>
+    <string name="grant_permission">授予权限</string>
+</resources>
