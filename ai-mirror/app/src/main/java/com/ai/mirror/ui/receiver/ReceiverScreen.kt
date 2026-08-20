@@ -6,36 +6,40 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Flip
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,6 +57,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -60,8 +65,18 @@ import com.ai.mirror.R
 import com.ai.mirror.data.streaming.ConnectionState
 import com.ai.mirror.ui.components.DirectConnectDialog
 import com.ai.mirror.ui.components.StatsOverlay
+import com.ai.mirror.ui.theme.BackgroundDark
+import com.ai.mirror.ui.theme.CardBorderDark
+import com.ai.mirror.ui.theme.ErrorRed
+import com.ai.mirror.ui.theme.GlassBorder
+import com.ai.mirror.ui.theme.GlassSurface
 import com.ai.mirror.ui.theme.PrimaryBlue
+import com.ai.mirror.ui.theme.PrimaryBlueDark
+import com.ai.mirror.ui.theme.PrimaryBlueLight
 import com.ai.mirror.ui.theme.SuccessGreen
+import com.ai.mirror.ui.theme.SurfaceDark
+import com.ai.mirror.ui.theme.TextPrimaryDark
+import com.ai.mirror.ui.theme.TextSecondaryDark
 import com.ai.mirror.ui.theme.WarningOrange
 
 @Composable
@@ -97,116 +112,195 @@ fun ReceiverScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(BackgroundDark)
             .clickable { showControls = !showControls }
     ) {
-        // Video Stream Render Canvas
+        // Video Stream Canvas
         if (uiState.currentBitmap != null) {
             Image(
                 bitmap = uiState.currentBitmap!!.asImageBitmap(),
                 contentDescription = stringResource(R.string.receiver_title),
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
+                contentScale = if (uiState.isFullscreen) ContentScale.Crop else ContentScale.Fit
             )
         } else {
-            // Idle / Connecting Placeholder
-            Column(
+            // Placeholder / Status Display Card
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
             ) {
-                when (uiState.connectionState) {
-                    ConnectionState.CONNECTING -> {
-                        CircularProgressIndicator(color = PrimaryBlue)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = uiState.statusMessage.ifBlank { stringResource(R.string.connecting) },
-                            color = Color.White,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                    ConnectionState.DISCONNECTED, ConnectionState.ERROR, ConnectionState.REJECTED -> {
-                        Text(
-                            text = uiState.statusMessage.ifBlank { stringResource(R.string.waiting_stream) },
-                            color = WarningOrange,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Button(onClick = { viewModel.reconnect() }) {
-                                Icon(Icons.Default.Refresh, contentDescription = null)
-                                Spacer(modifier = Modifier.size(6.dp))
-                                Text(stringResource(R.string.reconnect))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(SurfaceDark)
+                        .border(1.dp, CardBorderDark, RoundedCornerShape(20.dp))
+                        .padding(24.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        when (uiState.connectionState) {
+                            ConnectionState.CONNECTING -> {
+                                CircularProgressIndicator(
+                                    color = PrimaryBlueLight,
+                                    strokeWidth = 3.dp,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Text(
+                                    text = uiState.statusMessage.ifBlank { "正在连接发送端…" },
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = "目标地址: ${uiState.targetIp}:${uiState.targetPort}",
+                                    color = TextSecondaryDark,
+                                    fontSize = 12.sp
+                                )
                             }
-                            Button(onClick = { showDirectConnectDialog = true }) {
-                                Icon(Icons.Default.Link, contentDescription = null)
-                                Spacer(modifier = Modifier.size(6.dp))
-                                Text(stringResource(R.string.manual_connect))
+                            ConnectionState.DISCONNECTED, ConnectionState.ERROR, ConnectionState.REJECTED -> {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape)
+                                        .background(WarningOrange.copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Warning,
+                                        contentDescription = null,
+                                        tint = WarningOrange,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                }
+                                Text(
+                                    text = "连接提示",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    text = uiState.statusMessage.ifBlank { "未能连接到发送端手机" },
+                                    color = WarningOrange,
+                                    fontSize = 13.sp,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 18.sp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Button(
+                                        onClick = { viewModel.reconnect() },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(10.dp)
+                                    ) {
+                                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("重试连接", fontSize = 13.sp)
+                                    }
+                                    Button(
+                                        onClick = { showDirectConnectDialog = true },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlueDark)
+                                    ) {
+                                        Icon(Icons.Default.Link, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("输入 IP", fontSize = 13.sp)
+                                    }
+                                }
                             }
-                        }
-                    }
-                    else -> {
-                        Text(
-                            text = stringResource(R.string.waiting_stream),
-                            color = Color.LightGray,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { showDirectConnectDialog = true }) {
-                            Icon(Icons.Default.Link, contentDescription = null)
-                            Spacer(modifier = Modifier.size(6.dp))
-                            Text(stringResource(R.string.manual_connect))
+                            else -> {
+                                Text(
+                                    text = "等待连接视频流",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    text = "请在另一台手机上选择【开启摄像头(发送端)】",
+                                    color = TextSecondaryDark,
+                                    fontSize = 13.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Button(
+                                    onClick = { showDirectConnectDialog = true },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Icon(Icons.Default.Link, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("手动输入 IP 直连", fontSize = 13.sp)
+                                }
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Overlay Controls
+        // Overlay Controls (Safe insets aware)
         AnimatedVisibility(
             visible = showControls,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+            ) {
                 // Top Action Bar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 48.dp, start = 16.dp, end = 16.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
-                        onClick = onNavigateBack,
+                    // Back Button
+                    Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(42.dp)
                             .clip(CircleShape)
-                            .background(Color.Black.copy(alpha = 0.5f))
+                            .background(GlassSurface)
+                            .border(1.dp, GlassBorder, CircleShape)
+                            .clickable { onNavigateBack() },
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
-                            tint = Color.White
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.Black.copy(alpha = 0.6f)
-                        ),
-                        shape = RoundedCornerShape(20.dp)
+                    // Connection Badge
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(GlassSurface)
+                            .border(1.dp, GlassBorder, RoundedCornerShape(20.dp))
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(10.dp)
+                                    .size(8.dp)
                                     .clip(CircleShape)
                                     .background(
                                         if (uiState.connectionState == ConnectionState.PAIRED) SuccessGreen
@@ -214,23 +308,23 @@ fun ReceiverScreen(
                                     )
                             )
                             Text(
-                                text = if (uiState.connectionState == ConnectionState.PAIRED) stringResource(R.string.connected)
+                                text = if (uiState.connectionState == ConnectionState.PAIRED) "已连接镜像"
                                 else uiState.connectionState.name,
                                 color = Color.White,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
                 }
 
-                // Bottom Controls HUD
+                // Bottom Controls Dock
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = 32.dp, start = 16.dp, end = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Stats HUD
                     if (uiState.connectionState == ConnectionState.PAIRED) {
@@ -241,53 +335,135 @@ fun ReceiverScreen(
                         )
                     }
 
-                    // Bottom Action Bar
-                    Row(
+                    // Bottom Floating Action Pill
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(24.dp))
-                            .background(Color.Black.copy(alpha = 0.6f))
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
+                            .background(GlassSurface)
+                            .border(1.dp, GlassBorder, RoundedCornerShape(24.dp))
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
                     ) {
-                        // Mirror Flip Toggle
-                        IconButton(onClick = { viewModel.toggleMirrorFlip() }) {
-                            Icon(
-                                imageVector = Icons.Default.Flip,
-                                contentDescription = stringResource(R.string.mirror_flip_horizontal),
-                                tint = if (uiState.isMirrorFlip) PrimaryBlue else Color.White
-                            )
-                        }
-
-                        // Take Snapshot
-                        IconButton(
-                            onClick = { viewModel.takeSnapshot() },
-                            enabled = uiState.currentBitmap != null
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Camera,
-                                contentDescription = stringResource(R.string.take_snapshot),
-                                tint = Color.White
-                            )
-                        }
+                            // Mirror Flip Toggle
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.clickable { viewModel.toggleMirrorFlip() }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (uiState.isMirrorFlip) PrimaryBlue.copy(alpha = 0.35f)
+                                            else Color.White.copy(alpha = 0.1f)
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Flip,
+                                        contentDescription = "水平镜像翻转",
+                                        tint = if (uiState.isMirrorFlip) PrimaryBlueLight else Color.White,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = if (uiState.isMirrorFlip) "镜子模式" else "原画模式",
+                                    fontSize = 11.sp,
+                                    color = if (uiState.isMirrorFlip) PrimaryBlueLight else TextSecondaryDark
+                                )
+                            }
 
-                        // Fullscreen Toggle
-                        IconButton(onClick = { viewModel.toggleFullscreen() }) {
-                            Icon(
-                                imageVector = if (uiState.isFullscreen) Icons.Default.FullscreenExit else Icons.Default.Fullscreen,
-                                contentDescription = stringResource(R.string.fullscreen),
-                                tint = Color.White
-                            )
-                        }
+                            // Take Snapshot
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.clickable(enabled = uiState.currentBitmap != null) {
+                                    viewModel.takeSnapshot()
+                                }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.1f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Camera,
+                                        contentDescription = "拍照保存",
+                                        tint = if (uiState.currentBitmap != null) Color.White else Color.Gray,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "拍照截图",
+                                    fontSize = 11.sp,
+                                    color = TextSecondaryDark
+                                )
+                            }
 
-                        // Manual Connect
-                        IconButton(onClick = { showDirectConnectDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Link,
-                                contentDescription = stringResource(R.string.manual_connect),
-                                tint = Color.White
-                            )
+                            // Fullscreen Toggle
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.clickable { viewModel.toggleFullscreen() }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.1f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = if (uiState.isFullscreen) Icons.Default.FullscreenExit else Icons.Default.Fullscreen,
+                                        contentDescription = "全屏切换",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = if (uiState.isFullscreen) "退出全屏" else "全屏显示",
+                                    fontSize = 11.sp,
+                                    color = TextSecondaryDark
+                                )
+                            }
+
+                            // Exit / Disconnect
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.clickable {
+                                    viewModel.disconnect()
+                                    onNavigateBack()
+                                }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .clip(CircleShape)
+                                        .background(ErrorRed.copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.PowerSettingsNew,
+                                        contentDescription = "断开连接",
+                                        tint = ErrorRed,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "断开退出",
+                                    fontSize = 11.sp,
+                                    color = ErrorRed
+                                )
+                            }
                         }
                     }
                 }

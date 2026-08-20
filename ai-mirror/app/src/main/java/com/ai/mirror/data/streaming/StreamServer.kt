@@ -46,9 +46,13 @@ class StreamServer(
     fun start() {
         if (_isServerRunning.value) return
         try {
-            val address = InetSocketAddress(port)
-            serverInstance = InternalWebSocketServer(address)
-            serverInstance?.isReuseAddr = true
+            // Bind to all network interfaces (0.0.0.0)
+            val address = InetSocketAddress("0.0.0.0", port)
+            serverInstance = InternalWebSocketServer(address).apply {
+                isReuseAddr = true
+                setTcpNoDelay(true)
+                connectionLostTimeout = 10
+            }
             serverInstance?.start()
             _isServerRunning.value = true
         } catch (e: Exception) {
@@ -61,7 +65,7 @@ class StreamServer(
     fun stop() {
         if (!_isServerRunning.value) return
         try {
-            serverInstance?.stop(1000)
+            serverInstance?.stop(500)
             serverInstance = null
         } catch (e: Exception) {
             e.printStackTrace()
@@ -111,7 +115,7 @@ class StreamServer(
     private inner class InternalWebSocketServer(address: InetSocketAddress) : WebSocketServer(address) {
 
         override fun onOpen(conn: WebSocket?, handshake: ClientHandshake?) {
-            // Wait for pair request
+            // Connection opened, wait for pair request
         }
 
         override fun onClose(conn: WebSocket?, code: Int, reason: String?, remote: Boolean) {

@@ -1,5 +1,7 @@
 package com.ai.mirror.data.discovery
 
+import android.content.Context
+import android.net.wifi.WifiManager
 import com.ai.mirror.data.model.DeviceRole
 import com.ai.mirror.data.model.DiscoveredDevice
 import com.ai.mirror.data.protocol.MirrorProtocol
@@ -22,13 +24,16 @@ data class UdpBeaconPayload(
     val ip: String,
     val port: Int,
     val role: String,
+    val isStreaming: Boolean = false,
     val timestamp: Long = System.currentTimeMillis()
 )
 
 class UdpBroadcastHelper(
+    private val context: Context,
     private val deviceId: String,
     private val deviceName: String,
     private val role: DeviceRole,
+    private val isStreaming: Boolean = false,
     private val streamPort: Int = MirrorProtocol.DEFAULT_STREAM_PORT,
     private val beaconPort: Int = MirrorProtocol.DEFAULT_BEACON_PORT,
     private val onDeviceDiscovered: (DiscoveredDevice) -> Unit
@@ -39,6 +44,7 @@ class UdpBroadcastHelper(
     private var broadcastJob: Job? = null
     private var listenJob: Job? = null
     private var listenSocket: DatagramSocket? = null
+    private var multicastLock: WifiManager.MulticastLock? = null
     private var isRunning = false
 
     @Synchronized
@@ -46,6 +52,7 @@ class UdpBroadcastHelper(
         if (isRunning) return
         isRunning = true
 
+        acquireMulticastLock()
         startListening()
         startBroadcasting()
     }
@@ -61,6 +68,31 @@ class UdpBroadcastHelper(
         try {
             listenSocket?.close()
             listenSocket = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        releaseMulticastLock()
+    }
+
+    private fun acquireMulticastLock() {
+        try {
+            val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+            multicastLock = wifiManager?.createMulticastLock("AiMirrorMulticastLock")?.apply {
+                setReferenceCounted(true)
+                acquire()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun releaseMulticastLock() {
+        try {
+            if (multicastLock?.isHeld == true) {
+                multicastLock?.release()
+            }
+            multicastLock = null
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -80,6 +112,7 @@ class UdpBroadcastHelper(
                                 ip = localIp,
                                 port = streamPort,
                                 role = role.name,
+                                isStreaming = isStreaming,
                                 timestamp = System.currentTimeMillis()
                             )
                             val jsonBytes = gson.toJson(payload).toByteArray(Charsets.UTF_8)
@@ -96,9 +129,9 @@ class UdpBroadcastHelper(
                         }
                     }
                 } catch (e: Exception) {
-                    // Ignore broadcast errors when network changes
+                    // Ignore transient network errors
                 }
-                delay(1500)
+                delay(1200)
             }
         }
     }
@@ -135,6 +168,7 @@ class UdpBroadcastHelper(
                                 ip = senderIp,
                                 port = beacon.port,
                                 role = deviceRole,
+                                isStreaming = beacon.isStreaming,
                                 lastSeenTimestamp = System.currentTimeMillis()
                             )
                             onDeviceDiscovered(device)

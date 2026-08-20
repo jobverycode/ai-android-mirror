@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryBlue,
     secondary = AccentCyan,
-    tertiary = Pink80,
+    tertiary = AccentIndigo,
     background = BackgroundDark,
     surface = SurfaceDark,
     onPrimary = Color.White,
@@ -26,7 +26,7 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryBlue,
     secondary = AccentCyan,
-    tertiary = Pink40,
+    tertiary = AccentIndigo,
     background = Color(0xFFF8FAFC),
     surface = Color.White,
     onPrimary = Color.White,
@@ -38,7 +38,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun AiMirrorTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -47,7 +47,7 @@ fun AiMirrorTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
         darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else -> DarkColorScheme // Maintain sleek dark mirror theme by default
     }
 
     MaterialTheme(

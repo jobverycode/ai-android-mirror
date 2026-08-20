@@ -1,7 +1,10 @@
 package com.ai.mirror.ui.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.NetworkCheck
@@ -22,8 +25,8 @@ import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +46,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,6 +57,13 @@ import com.ai.mirror.R
 import com.ai.mirror.data.model.CompressionQuality
 import com.ai.mirror.data.model.FpsPreset
 import com.ai.mirror.data.model.ResolutionPreset
+import com.ai.mirror.ui.theme.BackgroundDark
+import com.ai.mirror.ui.theme.CardBorderDark
+import com.ai.mirror.ui.theme.CardDark
+import com.ai.mirror.ui.theme.PrimaryBlue
+import com.ai.mirror.ui.theme.PrimaryBlueLight
+import com.ai.mirror.ui.theme.SurfaceDark
+import com.ai.mirror.ui.theme.TextSecondaryDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,24 +79,27 @@ fun SettingsScreen(
     var showDeviceNameDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = BackgroundDark,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = stringResource(R.string.settings_title),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = Color.White
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = BackgroundDark
                 )
             )
         }
@@ -105,10 +120,12 @@ fun SettingsScreen(
             }
 
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(SurfaceDark)
+                        .border(1.dp, CardBorderDark, RoundedCornerShape(16.dp))
                 ) {
                     Column {
                         SettingsItem(
@@ -120,13 +137,13 @@ fun SettingsScreen(
                             },
                             onClick = { showLanguageDialog = true }
                         )
-                        Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(color = CardBorderDark, modifier = Modifier.padding(horizontal = 16.dp))
                         SettingsItem(
                             title = stringResource(R.string.device_name),
                             subtitle = settings.deviceName,
                             onClick = { showDeviceNameDialog = true }
                         )
-                        Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(color = CardBorderDark, modifier = Modifier.padding(horizontal = 16.dp))
                         SettingsSwitchItem(
                             title = stringResource(R.string.keep_screen_on),
                             subtitle = stringResource(R.string.keep_screen_on_desc),
@@ -146,10 +163,12 @@ fun SettingsScreen(
             }
 
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(SurfaceDark)
+                        .border(1.dp, CardBorderDark, RoundedCornerShape(16.dp))
                 ) {
                     Column {
                         SettingsItem(
@@ -161,7 +180,7 @@ fun SettingsScreen(
                             },
                             onClick = { showResolutionDialog = true }
                         )
-                        Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(color = CardBorderDark, modifier = Modifier.padding(horizontal = 16.dp))
                         SettingsItem(
                             title = stringResource(R.string.stream_fps),
                             subtitle = when (settings.fps) {
@@ -172,7 +191,7 @@ fun SettingsScreen(
                             },
                             onClick = { showFpsDialog = true }
                         )
-                        Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(color = CardBorderDark, modifier = Modifier.padding(horizontal = 16.dp))
                         SettingsItem(
                             title = stringResource(R.string.stream_quality),
                             subtitle = when (settings.quality) {
@@ -195,10 +214,12 @@ fun SettingsScreen(
             }
 
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(SurfaceDark)
+                        .border(1.dp, CardBorderDark, RoundedCornerShape(16.dp))
                 ) {
                     Column {
                         SettingsSwitchItem(
@@ -207,7 +228,7 @@ fun SettingsScreen(
                             checked = settings.autoAcceptPairing,
                             onCheckedChange = { viewModel.setAutoAcceptPairing(it) }
                         )
-                        Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(color = CardBorderDark, modifier = Modifier.padding(horizontal = 16.dp))
                         SettingsItem(
                             title = stringResource(R.string.server_port),
                             subtitle = settings.serverPort.toString(),
@@ -226,22 +247,27 @@ fun SettingsScreen(
             }
 
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(SurfaceDark)
+                        .border(1.dp, CardBorderDark, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column {
                         Text(
                             text = stringResource(R.string.app_name) + " v1.0.0",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = stringResource(R.string.about_desc),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = TextSecondaryDark,
+                            lineHeight = 18.sp
                         )
                     }
                 }
@@ -416,14 +442,15 @@ fun SettingsSectionHeader(title: String, icon: androidx.compose.ui.graphics.vect
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
+            tint = PrimaryBlueLight,
+            modifier = Modifier.size(18.dp)
         )
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = PrimaryBlueLight,
+            fontSize = 14.sp
         )
     }
 }
@@ -443,11 +470,17 @@ fun SettingsItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = TextSecondaryDark
             )
         }
     }
@@ -468,11 +501,17 @@ fun SettingsSwitchItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = TextSecondaryDark
             )
         }
         Spacer(modifier = Modifier.width(12.dp))

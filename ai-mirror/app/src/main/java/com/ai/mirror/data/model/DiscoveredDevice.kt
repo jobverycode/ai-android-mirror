@@ -6,6 +6,7 @@ data class DiscoveredDevice(
     val ip: String,
     val port: Int,
     val role: DeviceRole,
+    val isStreaming: Boolean = false,
     val lastSeenTimestamp: Long = System.currentTimeMillis()
 ) {
     val endpoint: String

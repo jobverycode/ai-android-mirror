@@ -1,6 +1,13 @@
 package com.ai.mirror.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,16 +26,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Cast
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tv
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,7 +48,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -53,6 +61,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -63,9 +73,24 @@ import com.ai.mirror.R
 import com.ai.mirror.data.model.DeviceRole
 import com.ai.mirror.data.model.DiscoveredDevice
 import com.ai.mirror.ui.components.DirectConnectDialog
+import com.ai.mirror.ui.theme.AccentCyan
+import com.ai.mirror.ui.theme.AccentIndigo
+import com.ai.mirror.ui.theme.BackgroundDark
+import com.ai.mirror.ui.theme.CardBorderDark
+import com.ai.mirror.ui.theme.CardDark
+import com.ai.mirror.ui.theme.GlassBorder
+import com.ai.mirror.ui.theme.GlassSurface
 import com.ai.mirror.ui.theme.PrimaryBlue
+import com.ai.mirror.ui.theme.PrimaryBlueDark
+import com.ai.mirror.ui.theme.PrimaryBlueLight
 import com.ai.mirror.ui.theme.SuccessGreen
+import com.ai.mirror.ui.theme.SuccessGreenGlow
+import com.ai.mirror.ui.theme.SurfaceDark
+import com.ai.mirror.ui.theme.TextPrimaryDark
+import com.ai.mirror.ui.theme.TextSecondaryDark
+import com.ai.mirror.ui.theme.TextTertiaryDark
 import com.ai.mirror.ui.theme.WarningOrange
+import com.ai.mirror.ui.theme.WarningOrangeGlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,37 +105,65 @@ fun HomeScreen(
     var showDirectConnectDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = BackgroundDark,
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.app_name),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = stringResource(R.string.app_description),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(PrimaryBlue, AccentCyan)
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Videocam,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = stringResource(R.string.app_name),
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 18.sp,
+                                color = Color.White
+                            )
+                            Text(
+                                text = stringResource(R.string.app_description),
+                                fontSize = 11.sp,
+                                color = TextSecondaryDark
+                            )
+                        }
                     }
                 },
                 actions = {
                     IconButton(onClick = { showDirectConnectDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Link,
-                            contentDescription = stringResource(R.string.manual_connect)
+                            contentDescription = stringResource(R.string.manual_connect),
+                            tint = Color.White
                         )
                     }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.settings)
+                            contentDescription = stringResource(R.string.settings),
+                            tint = Color.White
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = BackgroundDark
                 )
             )
         }
@@ -120,12 +173,12 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Network & Device Info Card
+            // Local Device & Network Status Card
             item {
-                Spacer(modifier = Modifier.height(4.dp))
-                NetworkInfoCard(
+                Spacer(modifier = Modifier.height(2.dp))
+                LocalNetworkBadge(
                     deviceName = uiState.deviceName,
                     localIp = uiState.localIp,
                     isWifiConnected = uiState.isWifiConnected,
@@ -133,24 +186,27 @@ fun HomeScreen(
                 )
             }
 
-            // Role Selection Header
+            // Section Header: Select Role
             item {
                 Text(
                     text = stringResource(R.string.role_title),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
             // Role 1: Sender (Camera)
             item {
-                RoleSelectionCard(
+                RoleHeroCard(
                     title = stringResource(R.string.role_sender_title),
-                    description = stringResource(R.string.role_sender_desc),
+                    subtitle = stringResource(R.string.role_sender_desc),
+                    badgeText = "推流端",
                     icon = Icons.Default.CameraAlt,
-                    isSelected = uiState.selectedRole == DeviceRole.SENDER,
-                    actionText = stringResource(R.string.role_sender_title),
-                    onSelect = {
+                    gradient = listOf(PrimaryBlueDark, PrimaryBlue),
+                    buttonText = "开启摄像头 (发送端)",
+                    onClick = {
                         viewModel.selectRole(DeviceRole.SENDER)
                         onNavigateToSender()
                     }
@@ -159,20 +215,21 @@ fun HomeScreen(
 
             // Role 2: Receiver (Mirror Screen)
             item {
-                RoleSelectionCard(
+                RoleHeroCard(
                     title = stringResource(R.string.role_receiver_title),
-                    description = stringResource(R.string.role_receiver_desc),
+                    subtitle = stringResource(R.string.role_receiver_desc),
+                    badgeText = "显示端",
                     icon = Icons.Default.Tv,
-                    isSelected = uiState.selectedRole == DeviceRole.RECEIVER,
-                    actionText = stringResource(R.string.role_receiver_title),
-                    onSelect = {
+                    gradient = listOf(Color(0xFF4338CA), Color(0xFF6366F1)),
+                    buttonText = "打开镜子显示 (接收端)",
+                    onClick = {
                         viewModel.selectRole(DeviceRole.RECEIVER)
                         onNavigateToReceiver(null, null)
                     }
                 )
             }
 
-            // LAN Discovered Devices Section Header
+            // Section Header: Discovered LAN Devices
             item {
                 Row(
                     modifier = Modifier
@@ -188,19 +245,25 @@ fun HomeScreen(
                         Text(
                             text = stringResource(R.string.discovered_devices),
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                         if (uiState.isScanning) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp
+                                modifier = Modifier.size(14.dp),
+                                strokeWidth = 2.dp,
+                                color = PrimaryBlueLight
                             )
                         }
                     }
-                    IconButton(onClick = { viewModel.startDiscovery() }) {
+                    IconButton(
+                        onClick = { viewModel.startDiscovery() },
+                        modifier = Modifier.size(32.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = stringResource(R.string.retry)
+                            contentDescription = stringResource(R.string.retry),
+                            tint = PrimaryBlueLight
                         )
                     }
                 }
@@ -209,11 +272,11 @@ fun HomeScreen(
             // Discovered Devices List
             if (discoveredDevices.isEmpty()) {
                 item {
-                    NoDevicesCard()
+                    NoDevicesBanner()
                 }
             } else {
                 items(discoveredDevices, key = { it.endpoint }) { device ->
-                    DiscoveredDeviceItem(
+                    DiscoveredDeviceCard(
                         device = device,
                         onConnect = {
                             if (device.isSender) {
@@ -227,7 +290,7 @@ fun HomeScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -244,23 +307,21 @@ fun HomeScreen(
 }
 
 @Composable
-fun NetworkInfoCard(
+fun LocalNetworkBadge(
     deviceName: String,
     localIp: String,
     isWifiConnected: Boolean,
     onRefresh: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        shape = RoundedCornerShape(16.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(SurfaceDark)
+            .border(1.dp, CardBorderDark, RoundedCornerShape(16.dp))
+            .padding(14.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -273,44 +334,56 @@ fun NetworkInfoCard(
                     Icon(
                         imageVector = Icons.Default.PhoneAndroid,
                         contentDescription = null,
-                        tint = PrimaryBlue
+                        tint = PrimaryBlueLight,
+                        modifier = Modifier.size(20.dp)
                     )
                     Text(
                         text = deviceName,
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodyLarge
+                        fontSize = 15.sp,
+                        color = Color.White
                     )
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            if (isWifiConnected) SuccessGreenGlow else WarningOrangeGlow
+                        )
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
-                    Icon(
-                        imageVector = if (isWifiConnected) Icons.Default.Wifi else Icons.Default.WifiOff,
-                        contentDescription = null,
-                        tint = if (isWifiConnected) SuccessGreen else WarningOrange,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = if (isWifiConnected) stringResource(R.string.wifi_connected) else stringResource(R.string.wifi_disconnected),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (isWifiConnected) SuccessGreen else WarningOrange,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isWifiConnected) Icons.Default.Wifi else Icons.Default.WifiOff,
+                            contentDescription = null,
+                            tint = if (isWifiConnected) SuccessGreen else WarningOrange,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = if (isWifiConnected) "已连接 Wi-Fi" else "未连接 Wi-Fi",
+                            fontSize = 11.sp,
+                            color = if (isWifiConnected) SuccessGreen else WarningOrange,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
 
             if (localIp.isNotBlank()) {
                 Text(
-                    text = "${stringResource(R.string.device_ip)}: $localIp",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "本机局域网 IP: $localIp",
+                    fontSize = 13.sp,
+                    color = TextSecondaryDark,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                 )
             } else {
                 Text(
                     text = stringResource(R.string.wifi_warning),
-                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = 12.sp,
                     color = WarningOrange
                 )
             }
@@ -319,90 +392,113 @@ fun NetworkInfoCard(
 }
 
 @Composable
-fun RoleSelectionCard(
+fun RoleHeroCard(
     title: String,
-    description: String,
+    subtitle: String,
+    badgeText: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    isSelected: Boolean,
-    actionText: String,
-    onSelect: () -> Unit
+    gradient: List<Color>,
+    buttonText: String,
+    onClick: () -> Unit
 ) {
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onSelect() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-            else MaterialTheme.colorScheme.surface
-        ),
-        border = if (isSelected) CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(PrimaryBlue)
-        ) else null,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(SurfaceDark)
+            .border(1.dp, CardBorderDark, RoundedCornerShape(18.dp))
+            .clickable { onClick() }
+            .padding(16.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(PrimaryBlue.copy(alpha = 0.15f)),
+                        .size(46.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Brush.linearGradient(gradient)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = PrimaryBlue,
+                        tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
                 }
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = title,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color.White.copy(alpha = 0.1f))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = badgeText,
+                                fontSize = 10.sp,
+                                color = TextSecondaryDark,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = subtitle,
+                        fontSize = 12.sp,
+                        color = TextSecondaryDark,
+                        lineHeight = 16.sp
                     )
                 }
             }
 
             Button(
-                onClick = onSelect,
+                onClick = onClick,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp)
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = gradient.last()
+                )
             ) {
-                Text(actionText)
+                Text(
+                    text = buttonText,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
             }
         }
     }
 }
 
 @Composable
-fun DiscoveredDeviceItem(
+fun DiscoveredDeviceCard(
     device: DiscoveredDevice,
     onConnect: () -> Unit
 ) {
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(CardDark)
+            .border(1.dp, CardBorderDark, RoundedCornerShape(14.dp))
+            .padding(14.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -414,62 +510,103 @@ fun DiscoveredDeviceItem(
                     Text(
                         text = device.name,
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodyLarge
+                        fontSize = 15.sp,
+                        color = Color.White
                     )
-                    SuggestionChip(
-                        onClick = {},
-                        label = {
+
+                    if (device.isStreaming) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(SuccessGreenGlow)
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
                             Text(
-                                text = if (device.isSender) stringResource(R.string.role_sender_title)
-                                else stringResource(R.string.role_receiver_title),
-                                fontSize = 10.sp
+                                text = "正在推流",
+                                fontSize = 10.sp,
+                                color = SuccessGreen,
+                                fontWeight = FontWeight.Bold
                             )
                         }
-                    )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color.White.copy(alpha = 0.08f))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = if (device.isSender) "发送端" else "接收端",
+                                fontSize = 10.sp,
+                                color = TextSecondaryDark
+                            )
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "${device.ip}:${device.port}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    fontSize = 12.sp,
+                    color = TextSecondaryDark,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                 )
             }
 
+            Spacer(modifier = Modifier.width(8.dp))
+
             Button(
                 onClick = onConnect,
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (device.isStreaming) SuccessGreen else PrimaryBlue
+                )
             ) {
-                Text(stringResource(R.string.connect))
+                Text(
+                    text = if (device.isStreaming) "连接镜像" else "连接配对",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
 
 @Composable
-fun NoDevicesCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        ),
-        shape = RoundedCornerShape(12.dp)
+fun NoDevicesBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(SurfaceDark.copy(alpha = 0.6f))
+            .border(1.dp, CardBorderDark, RoundedCornerShape(14.dp))
+            .padding(16.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Info,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = TextSecondaryDark,
+                modifier = Modifier.size(22.dp)
             )
-            Text(
-                text = stringResource(R.string.no_devices_found),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column {
+                Text(
+                    text = "正在持续扫描局域网中的镜像设备…",
+                    fontSize = 13.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "请确保两台手机连接同一 Wi-Fi，且一台手机已点击【开启摄像头】",
+                    fontSize = 11.sp,
+                    color = TextSecondaryDark,
+                    lineHeight = 15.sp
+                )
+            }
         }
     }
 }

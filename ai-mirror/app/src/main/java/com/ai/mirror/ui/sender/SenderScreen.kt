@@ -12,25 +12,30 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,7 +44,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,12 +55,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ai.mirror.R
@@ -64,8 +68,14 @@ import com.ai.mirror.data.model.ResolutionPreset
 import com.ai.mirror.ui.components.PairRequestDialog
 import com.ai.mirror.ui.components.PermissionRequiredCard
 import com.ai.mirror.ui.components.StatsOverlay
+import com.ai.mirror.ui.theme.BackgroundDark
+import com.ai.mirror.ui.theme.ErrorRed
+import com.ai.mirror.ui.theme.GlassBorder
+import com.ai.mirror.ui.theme.GlassSurface
 import com.ai.mirror.ui.theme.PrimaryBlue
 import com.ai.mirror.ui.theme.SuccessGreen
+import com.ai.mirror.ui.theme.SuccessGreenGlow
+import com.ai.mirror.ui.theme.TextSecondaryDark
 import java.util.concurrent.Executors
 
 @Composable
@@ -108,10 +118,10 @@ fun SenderScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(BackgroundDark)
     ) {
         if (hasCameraPermission) {
-            // Camera Preview & Analysis
+            // Camera Preview View
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { ctx ->
@@ -167,16 +177,14 @@ fun SenderScreen(
                     }, ContextCompat.getMainExecutor(ctx))
 
                     previewView
-                },
-                update = {
-                    // Rebind camera if front/back switch changes
                 }
             )
         } else {
-            // Permission Card
+            // Permission Required Banner
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -188,106 +196,186 @@ fun SenderScreen(
             }
         }
 
-        // Top Controls Bar
-        Row(
+        // Top Header Overlay (Safe insets aware)
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 48.dp, start = 16.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            IconButton(
-                onClick = onNavigateBack,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.5f))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
-                    tint = Color.White
-                )
-            }
-
-            // Status Pill (Streaming & Connected Clients)
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Black.copy(alpha = 0.6f)
-                ),
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Back Button
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(GlassSurface)
+                        .border(1.dp, GlassBorder, CircleShape)
+                        .clickable { onNavigateBack() },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (uiState.connectedReceivers > 0) SuccessGreen else PrimaryBlue
-                            )
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
                     )
-                    Text(
-                        text = if (uiState.connectedReceivers > 0) {
-                            stringResource(R.string.receivers_count, uiState.connectedReceivers)
-                        } else {
-                            stringResource(R.string.streaming_idle)
-                        },
-                        color = Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                }
+
+                // Streaming Status Pill
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(GlassSurface)
+                        .border(1.dp, GlassBorder, RoundedCornerShape(20.dp))
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (uiState.connectedReceivers > 0) SuccessGreen else PrimaryBlue
+                                )
+                        )
+                        Text(
+                            text = if (uiState.connectedReceivers > 0) {
+                                "正在推流 • 已连接 ${uiState.connectedReceivers} 台设备"
+                            } else {
+                                "推流已就绪 • 等待接收端接入"
+                            },
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }
 
-        // Bottom Stats & Controls HUD
+        // Bottom Controls HUD (Safe insets aware)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp, start = 16.dp, end = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Stats Overlay
+            // Stats HUD
             StatsOverlay(
                 metrics = uiState.metrics,
                 isSender = true,
                 modifier = Modifier.align(Alignment.Start)
             )
 
-            // Bottom Action Bar
-            Row(
+            // Floating Bottom Action Pill
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(24.dp))
-                    .background(Color.Black.copy(alpha = 0.6f))
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
+                    .background(GlassSurface)
+                    .border(1.dp, GlassBorder, RoundedCornerShape(24.dp))
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
             ) {
-                // Torch Toggle
-                IconButton(
-                    onClick = { viewModel.toggleTorch() },
-                    enabled = !uiState.isFrontCamera
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = if (uiState.isTorchOn) Icons.Default.FlashOn else Icons.Default.FlashOff,
-                        contentDescription = stringResource(R.string.flashlight),
-                        tint = if (uiState.isTorchOn) Color.Yellow else Color.White
-                    )
-                }
+                    // Flashlight Toggle
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable(enabled = !uiState.isFrontCamera) {
+                            viewModel.toggleTorch()
+                        }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (uiState.isTorchOn) Color(0xFFFFD700).copy(alpha = 0.25f)
+                                    else Color.White.copy(alpha = 0.1f)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (uiState.isTorchOn) Icons.Default.FlashOn else Icons.Default.FlashOff,
+                                contentDescription = stringResource(R.string.flashlight),
+                                tint = if (uiState.isTorchOn) Color(0xFFFFD700) else Color.White,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (uiState.isTorchOn) "手电筒开" else "手电筒关",
+                            fontSize = 11.sp,
+                            color = if (uiState.isTorchOn) Color(0xFFFFD700) else TextSecondaryDark
+                        )
+                    }
 
-                // Switch Camera
-                IconButton(onClick = { viewModel.switchCamera() }) {
-                    Icon(
-                        imageVector = Icons.Default.Cameraswitch,
-                        contentDescription = stringResource(R.string.camera_switch),
-                        tint = Color.White
-                    )
+                    // Switch Camera
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable { viewModel.switchCamera() }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Cameraswitch,
+                                contentDescription = stringResource(R.string.camera_switch),
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (uiState.isFrontCamera) "前置" else "后置",
+                            fontSize = 11.sp,
+                            color = TextSecondaryDark
+                        )
+                    }
+
+                    // Stop / Exit Button
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable { onNavigateBack() }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(ErrorRed.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PowerSettingsNew,
+                                contentDescription = "停止推流",
+                                tint = ErrorRed,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "停止",
+                            fontSize = 11.sp,
+                            color = ErrorRed
+                        )
+                    }
                 }
             }
         }

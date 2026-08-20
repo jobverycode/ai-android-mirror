@@ -17,6 +17,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.net.URI
 import java.nio.ByteBuffer
 
@@ -87,16 +89,21 @@ class StreamClient(
     fun connect(targetIp: String, targetPort: Int) {
         disconnect()
         _connectionState.value = ConnectionState.CONNECTING
-        _statusMessage.value = "Connecting to $targetIp:$targetPort…"
+        _statusMessage.value = "正在连接 $targetIp:$targetPort …"
 
-        try {
-            val uri = URI("ws://$targetIp:$targetPort")
-            clientInstance = InternalWebSocketClient(uri)
-            clientInstance?.connect()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            _connectionState.value = ConnectionState.ERROR
-            _statusMessage.value = "Connection failed: ${e.message}"
+        scope.launch(Dispatchers.IO) {
+            try {
+                val uri = URI("ws://$targetIp:$targetPort")
+                clientInstance = InternalWebSocketClient(uri).apply {
+                    connectionLostTimeout = 10
+                    setTcpNoDelay(true)
+                }
+                clientInstance?.connect()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _connectionState.value = ConnectionState.ERROR
+                _statusMessage.value = formatErrorMessage(e)
+            }
         }
     }
 
@@ -110,7 +117,7 @@ class StreamClient(
             e.printStackTrace()
         } finally {
             _connectionState.value = ConnectionState.DISCONNECTED
-            _statusMessage.value = "Disconnected"
+            _statusMessage.value = "已断开连接"
             _latestFrame.value = null
             stats.reset()
         }
@@ -120,7 +127,7 @@ class StreamClient(
         heartbeatJob?.cancel()
         heartbeatJob = scope.launch {
             while (isActive && _connectionState.value == ConnectionState.PAIRED) {
-                delay(3000)
+                delay(2500)
                 try {
                     val pingPacket = StreamPacket(
                         type = MirrorProtocol.TYPE_HEARTBEAT_PING,
@@ -134,11 +141,25 @@ class StreamClient(
         }
     }
 
+    private fun formatErrorMessage(ex: Throwable?): String {
+        if (ex == null) return "未知连接异常"
+        val msg = ex.message ?: ""
+        return when {
+            ex is ConnectException || msg.contains("refused", ignoreCase = true) || msg.contains("ECONNREFUSED", ignoreCase = true) ->
+                "连接被拒绝：请确保另一台手机已点击【发送端】打开摄像头推流"
+            ex is SocketTimeoutException || msg.contains("timed out", ignoreCase = true) ->
+                "连接超时：请确认两台手机处于同一 Wi-Fi 局域网且 IP 正确"
+            msg.contains("ENETUNREACH", ignoreCase = true) || msg.contains("No route to host", ignoreCase = true) ->
+                "网络不可达：请检查 Wi-Fi 连接状态"
+            else ->
+                "连接失败: ${ex.localizedMessage ?: msg}"
+        }
+    }
+
     private inner class InternalWebSocketClient(uri: URI) : WebSocketClient(uri) {
 
         override fun onOpen(handshakedata: ServerHandshake?) {
-            // Send Pair Request
-            _statusMessage.value = "Sending pairing request…"
+            _statusMessage.value = "正在握手配对…"
             val pairPayload = PairRequestPayload(
                 deviceId = deviceId,
                 deviceName = deviceName,
@@ -168,11 +189,11 @@ class StreamClient(
                         val pairResponse = gson.fromJson(payloadStr, PairResponsePayload::class.java)
                         if (pairResponse.accepted) {
                             _connectionState.value = ConnectionState.PAIRED
-                            _statusMessage.value = "Paired with ${pairResponse.serverDeviceName}"
+                            _statusMessage.value = "已成功配对：${pairResponse.serverDeviceName}"
                             startHeartbeat()
                         } else {
                             _connectionState.value = ConnectionState.REJECTED
-                            _statusMessage.value = "Pairing rejected: ${pairResponse.message}"
+                            _statusMessage.value = "配对请求被对方拒绝: ${pairResponse.message}"
                             close()
                         }
                     } catch (e: Exception) {
@@ -208,14 +229,14 @@ class StreamClient(
         override fun onClose(code: Int, reason: String?, remote: Boolean) {
             if (_connectionState.value == ConnectionState.PAIRED) {
                 _connectionState.value = ConnectionState.DISCONNECTED
-                _statusMessage.value = "Connection closed ($reason)"
+                _statusMessage.value = "连接已中断 ($reason)"
             }
         }
 
         override fun onError(ex: Exception?) {
             ex?.printStackTrace()
             _connectionState.value = ConnectionState.ERROR
-            _statusMessage.value = "Error: ${ex?.message ?: "Unknown error"}"
+            _statusMessage.value = formatErrorMessage(ex)
         }
     }
 }

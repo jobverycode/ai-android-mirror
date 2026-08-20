@@ -20,6 +20,7 @@ class DeviceDiscoveryManager(
     private val deviceId: String,
     private val deviceName: String,
     private val role: DeviceRole,
+    private val isStreaming: Boolean = false,
     private val streamPort: Int = MirrorProtocol.DEFAULT_STREAM_PORT
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -39,9 +40,11 @@ class DeviceDiscoveryManager(
         isScanning = true
 
         udpHelper = UdpBroadcastHelper(
+            context = context,
             deviceId = deviceId,
             deviceName = deviceName,
             role = role,
+            isStreaming = isStreaming,
             streamPort = streamPort,
             onDeviceDiscovered = ::onDeviceFound
         )
@@ -92,8 +95,8 @@ class DeviceDiscoveryManager(
                 val iterator = deviceMap.entries.iterator()
                 while (iterator.hasNext()) {
                     val entry = iterator.next()
-                    // Remove device if not seen in 6 seconds
-                    if (now - entry.value.lastSeenTimestamp > 6000) {
+                    // Remove device if not seen in 5 seconds
+                    if (now - entry.value.lastSeenTimestamp > 5000) {
                         iterator.remove()
                         changed = true
                     }
@@ -106,6 +109,6 @@ class DeviceDiscoveryManager(
     }
 
     private fun updateList() {
-        _discoveredDevices.value = deviceMap.values.toList().sortedBy { it.name }
+        _discoveredDevices.value = deviceMap.values.toList().sortedByDescending { it.isStreaming }
     }
 }

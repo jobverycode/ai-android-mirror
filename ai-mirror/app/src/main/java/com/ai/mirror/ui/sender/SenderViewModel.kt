@@ -81,6 +81,7 @@ class SenderViewModel(application: Application) : AndroidViewModel(application) 
             deviceId = settingsRepository.deviceId,
             deviceName = settingsRepository.deviceName,
             role = DeviceRole.SENDER,
+            isStreaming = true,
             streamPort = settings.serverPort
         )
         discoveryManager?.startDiscovery()
