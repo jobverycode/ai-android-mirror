@@ -166,6 +166,12 @@ ai-mirror/
 ./scripts/install_all.sh
 ```
 
+### 4.4 Android 15+ 16 KB Page Alignment (16KB 内存页面对齐)
+针对 Android 15 及以上设备（如 Pixel 10 Pro XL / 现代 ARM64 设备），本工程已做如下优化：
+- 升级 CameraX 库至 1.4.0+，内置原生 `libimage_processing_util_jni.so` 原生库均已使用 `0x4000` (16 KB) ELF 页面对齐编译。
+- 配置 `packaging.jniLibs.useLegacyPackaging = false`，保证 APK 打包阶段原生库按照 16 KB (16384 bytes) 边界进行 Zip 压缩对齐校验。
+- 验证指令：`zipalign -c -P 16 -v 4 app-debug.apk` 全部检查项均返回 `(OK)`。
+
 ---
 
 ## 5. 维护与后续扩展指南 (Developer & AI Handoff Note)
