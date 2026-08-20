@@ -5,6 +5,7 @@
 - **核心工程目录**: [ai-mirror/](file:///Users/kele/code/ai_android_mirror/ai-mirror/)
 - **详细需求与架构文档**: [ai-mirror/README.md](file:///Users/kele/code/ai_android_mirror/ai-mirror/README.md)
 - **GitHub 仓库**: [https://github.com/jobverycode/ai-android-mirror](https://github.com/jobverycode/ai-android-mirror)
+- **最新 Release 下载**: [AI Mirror v1.0.0 发布包](https://github.com/jobverycode/ai-android-mirror/releases/tag/v1.0.0)
 
 ## 核心特性
 1. **发送端 / 接收端自由选定**：一台手机作为摄像头发送端，另一台作为镜子显示接收端。
