@@ -156,6 +156,16 @@ ai-mirror/
 # app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### 4.3 多设备一键自动安装与部署 (ADB Multi-Device Deployment)
+当通过 USB 或 Wi-Fi ADB 连接两台或多台手机时，可直接通过 Gradle Task 或快捷脚本自动构建并并发安装到所有连接的手机：
+```bash
+# 方式 1：通过 Gradle Task 一键构建并安装到所有 ADB 设备
+./gradlew installAllDebug
+
+# 方式 2：通过 Shell 脚本自动构建并安装
+./scripts/install_all.sh
+```
+
 ---
 
 ## 5. 维护与后续扩展指南 (Developer & AI Handoff Note)
@@ -163,6 +173,7 @@ ai-mirror/
 > **致后续开发者或接手的 AI 助手**：
 > 1. **代码规范**：所有新建或修改的代码必须保持清晰模块化，遵循 Kotlin 官方编码规范及 Jetpack 架构指南。
 > 2. **多语言更新**：若新增 UI 文本，必须同步更新 `res/values/strings.xml` (英文) 和 `res/values-zh-rCN/strings.xml` (简体中文)。
-> 3. **协议兼容性**：若需要拓展报文格式，在 `MirrorProtocol` 中递增 `flags` 或定义新的 `TYPE_*`，不要破坏固定 36 字节 Header 的向后兼容性。
+> 3. **协议兼容性**：若需要拓展报文格式，在 `MirrorProtocol` 中递增 `flags` 或定义新的 `TYPE_*`，不要破坏固定 40 字节 Header 的向后兼容性。
 > 4. **硬件加速编码升级**：当前版本采用成熟且高度兼容所有机型的 `FrameProcessor (YUV420 to JPEG)` + WebSocket 二进制通道；若未来需要引入 H.264 / HEVC 硬件 MediaCodec 编码，可直接通过 `TYPE_CONTROL_CONFIG` 协商并在 `PacketCodec` 的 Payload 中传输 NAL 单元。
-> 5. **Git 规范**：每次提交需使用中文清晰描述修改内容，项目目录保持以 `ai-` 开头。
+> 5. **多机自动化部署**：每次打包或修改需求后，使用 `./gradlew installAllDebug` 确保已连接的所有测试手机同步更新。
+> 6. **Git 规范**：每次提交需使用中文清晰描述修改内容，项目目录保持以 `ai-` 开头。

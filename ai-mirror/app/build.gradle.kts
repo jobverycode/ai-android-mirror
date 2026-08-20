@@ -1,3 +1,5 @@
+import java.io.ByteArrayOutputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -91,4 +93,47 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+tasks.register("installAllDebug") {
+    group = "install"
+    description = "Installs the debug APK to all connected ADB devices."
+    dependsOn("assembleDebug")
+    doLast {
+        val apkFile = file("build/outputs/apk/debug/app-debug.apk")
+        if (!apkFile.exists()) {
+            throw GradleException("APK not found at ${apkFile.absolutePath}")
+        }
+        val adb = android.adbExecutable.absolutePath
+        val stdout = ByteArrayOutputStream()
+        exec {
+            commandLine(adb, "devices")
+            standardOutput = stdout
+        }
+        val lines: List<String> = stdout.toString().lines()
+        val devices: List<String> = lines
+            .drop(1)
+            .map { line -> line.trim() }
+            .filter { line -> line.endsWith("device") }
+            .map { line -> line.substringBefore("\t").substringBefore(" ").trim() }
+            .filter { line -> line.isNotBlank() }
+
+        if (devices.isEmpty()) {
+            println("⚠️ No ADB devices connected.")
+        } else {
+            println("📱 Found ${devices.size} connected device(s): $devices")
+            for (serial in devices) {
+                println("🚀 Installing APK to device: $serial...")
+                val result = exec {
+                    isIgnoreExitValue = true
+                    commandLine(adb, "-s", serial, "install", "-r", apkFile.absolutePath)
+                }
+                if (result.exitValue == 0) {
+                    println("✅ Successfully installed on $serial")
+                } else {
+                    println("❌ Failed to install on $serial (exit code: ${result.exitValue})")
+                }
+            }
+        }
+    }
 }
